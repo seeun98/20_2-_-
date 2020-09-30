@@ -1,0 +1,9 @@
+{% if article_list %} <!--article_list가 있다면 render 함수로 전달받은 "질문목록"에 해당되는 데이터 -->
+    <ul>
+        {% for article in article_list %} <!--article_list를 반복하며 순차적으로 하나씩 question에 대입 -->
+        <li><a href="{% url 'communicate:detail' article.id %}">{{article.title}}</a></li> <!-- for문에 의해 대입된 question 객체의 id번호를 출력 -->
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>질문이 없습니다.</p>
+{% endif %}
