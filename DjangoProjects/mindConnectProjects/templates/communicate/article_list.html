@@ -1,9 +1,82 @@
-{% if article_list %} <!--article_list가 있다면 render 함수로 전달받은 "질문목록"에 해당되는 데이터 -->
-    <ul>
-        {% for article in article_list %} <!--article_list를 반복하며 순차적으로 하나씩 question에 대입 -->
-        <li><a href="{% url 'communicate:detail' article.id %}">{{article.title}}</a></li> <!-- for문에 의해 대입된 question 객체의 id번호를 출력 -->
+{% extends 'base.html' %}
+<!--{% load article_filter %} -->
+{% block content %}
+
+<div class="container my-3">
+    <table class="table">
+        <thead>
+        <tr class="thead-dark">
+            <th>번호</th>
+            <th>제목</th>
+            <th>작성일시</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if article_list %}
+        {% for article in article_list %}
+        <tr>
+            <td>
+                <!-- 번호 = 전체건수 - 시작인덱스 - 현재인덱스 + 1 -->
+                <!--{{ article_list.paginator.count|sub:article_list.start_index|sub:forloop.counter0|add:1 }}-->
+            </td>
+            <td>
+                <a href="{% url 'communicate:detail' article.id %}">{{ article.title }}</a>
+                {% if article.answer_set.count > 0 %}
+                <span class="text-danger small ml-2">{{ article.answer_set.count }}</span>
+                {% endif %}
+            </td>
+            <td>{{ article.create_date }}</td>
+        </tr>
         {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="3">질문이 없습니다.</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+
+     <!-- 페이징처리 시작 -->
+    <ul class="pagination justify-content-center">
+        <!-- 이전페이지 -->
+        {% if article_list.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ article_list.previous_page_number }}">이전</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true" href="#">이전</a>
+        </li>
+        {% endif %}
+        <!-- 페이지리스트 -->
+        {% for page_number in article_list.paginator.page_range %}
+        {% if page_number >= article_list.number|add:-5 and page_number <= article_list.number|add:5 %}
+            {% if page_number == article_list.number %}
+            <li class="page-item active" aria-current="page">
+                <a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a>
+            </li>
+            {% endif %}
+        {% endif %}
+        {% endfor %}
+        <!-- 다음페이지 -->
+        {% if article_list.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ article_list.next_page_number }}">다음</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true" href="#">다음</a>
+        </li>
+        {% endif %}
     </ul>
-{% else %}
-    <p>질문이 없습니다.</p>
-{% endif %}
+    <!-- 페이징처리 끝 -->
+
+
+    <a href="{% url 'communicate:article_create' %}" class="btn-btn-primary">질문 등록하기</a>
+</div>
+
+{% endblock %}

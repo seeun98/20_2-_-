@@ -9,5 +9,5 @@ urlpatterns = [
     path('<int:article_id>/', views.detail, name='detail'), #상세조회
     path('answer/create/<int:article_id>/', views.answer_create, name='answer_create'),
     #/path('article/modify/<int:article_id>/', views.article_modify, name='qrticle_modify'),
-
+    path('article/create/', views.article_create, name='article_create'),
 ]

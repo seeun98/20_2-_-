@@ -4,6 +4,9 @@ from django.http import HttpResponse
 from .models import Article
 from django.contrib import messages
 from django.utils import timezone
+from .forms import ArticleForm
+from django.core.paginator import Paginator
+
 # Create your views here.
 
 
@@ -12,6 +15,19 @@ def index(request):
     #article 목록 출력
     article_list = Article.objects.order_by('-created_at')
     context = {'article_list':article_list }
+
+    #입력 파라미터
+    page = request.GET.get('page', '1') #get 방식으로 요청한 url에서 page의 값을 가져올 때 사용한다.
+
+    #조회
+    article_list = Article.objects.order_by('-created_at')
+
+    #페이징처리
+    paginator = Paginator(article_list , 10) #페이지당 10개씩 보여주기
+    page_obj = paginator.get_page(page)
+
+    context = {'article_list' : page_obj}
+
     return render(request, 'communicate/article_list.html', context)
 
 
@@ -24,6 +40,21 @@ def detail(request,article_id):
 #답변 등록 함수
 def answer_create(request, article_id):
     article = get_object_or_404(Article, pk = article_id)
+
+    if request.method == "POST":
+        form = AnswerForm(request.POST)
+        if form.is_valid():
+            answer = form.save(commit=False)
+            answer.created_at = timezone.now()
+            answer.article = article
+            answer.save()
+            return redirect('pybo:detail', article_id=article.id)
+    else:
+        form = AnswerForm()
+    context = {'article': article, 'form': form}
+    return render(request, 'communicate/article_detail.html', context)
+
+
     article.answer_set.create(content=request.POST.get('content'), created_at=timezone.now())
     return redirect('communicate:detail', article_id = article_id)
 #질문 수정 함수
@@ -42,3 +73,17 @@ def answer_create(request, article_id):
             article.save()
             return redirect('communicate:detail', article_id=article.)
 '''
+
+#질문 등록 함수
+def article_create(request) :
+    if request.method == 'POST':  #목록조회 화면에서 질문 등록하기 버튼 -> ~question/create/ 페이지가 GET 방식으로 호출
+        form = ArticleForm(request.POST)
+        if form.is_valid():
+            article = form.save(commit=False)
+            article.created_at = timezone.now()
+            article.save()
+            return redirect('communicate:index')
+    else:
+        form = ArticleForm()
+    context = {'form': form}
+    return render(request, 'communicate/article_form.html', context)

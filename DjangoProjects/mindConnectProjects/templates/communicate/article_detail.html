@@ -1,49 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-    <h1>{{article.title}}</h1>
-    <div>{{article.content}}</div>
-
-    <h5>{{article.answer_set.count}}개의 답변이 있습니다. </h5>
-    <div>
-        <ul>
-            {% for answer in article.answer_set.all %}
-            <li>{{answer.content}}</li>
-            {% endfor %}
-        </ul>
-
-    </div>
-
-    <form action="{% url 'communicate:answer_create' article.id %}" method="post">
-        {% csrf_token %}
-        <textarea name = "content" id="content" rows="15"></textarea>
-        <input type="submit" value="답변등록">
-    </form>
-<!--
+{% extends 'base.html' %}
+{% block content %}
+<!-- ---------------------------------------------------------------------------------------- -->
+<div class="container my-3">
+    <h2 class="border-bottom py-2">{{ article.title }}</h2>
     <div class="card my-3">
         <div class="card-body">
-            <div class="card-text" style="white-space: pre-line;">{{ question.content }}</div>
+            <div class="card-text" style="white-space: pre-line;">{{ article.content }}</div>
             <div class="d-flex justify-content-end">
-                <div class="badge badge-light p-2 text-left">
-                    <div class="mb-2">{{ question.author.username }}</div>
-                    <div>{{ question.create_date }}</div>
+                <div class="badge badge-light p-2">
+                    {{ question.created_at }}
                 </div>
             </div>
-             -------------------------------------- [edit] --------------------------------------
-            {% if request.user == question.author %}
-            <div class="my-3">
-                <a href="{% url 'pybo:question_modify' question.id  %}"
-                   class="btn btn-sm btn-outline-secondary">수정</a>
-            </div>
-            {% endif %}
-             ------------------------------------------------------------------------------------
         </div>
     </div>
- -->
-</body>
-</html>
+    <h5 class="border-bottom my-3 py-2">{{article.answer_set.count}}개의 답변이 있습니다.</h5>
+    {% for answer in article.answer_set.all %}
+    <div class="card my-3">
+        <div class="card-body">
+            <div class="card-text" style="white-space: pre-line;">{{ answer.content }}</div>
+            <div class="d-flex justify-content-end">
+                <div class="badge badge-light p-2">
+                    {{ answer.created_at }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <form action="{% url 'communicate:answer_create' article.id %}" method="post" class="my-3">
+        {% csrf_token %}
+        {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+        {% for field in form %}
+            {% if field.errors %}
+            <strong>{{ field.label }}</strong>
+            {{ field.errors }}
+            {% endif %}
+        {% endfor %}
+        </div>
+        {% endif %}
+        <div class="form-group">
+            <textarea name="content" id="content" class="form-control" rows="10"></textarea>
+        </div>
+        <input type="submit" value="답변등록" class="btn btn-primary">
+    </form>
+</div>
+{% endblock %}
