@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db import models
 from django.http import HttpResponse
-from .models import Article
+from .models import Article, Answer
 from django.contrib import messages
 from django.utils import timezone
 from .forms import ArticleForm
@@ -58,21 +58,25 @@ def answer_create(request, article_id):
     article.answer_set.create(content=request.POST.get('content'), created_at=timezone.now())
     return redirect('communicate:detail', article_id = article_id)
 #질문 수정 함수
-'''def article_modify(request, article_id):
+def article_modify(request, article_id):
     article = get_object_or_404(Article, pk=article_id)
-    if request.user != article.author:
+    '''if request.user != article.author:
         messages.error(request, '수정권한이 없습니다.')
         return redirect('communicate:detail', article_id = article_id)
+        '''
 
     if request.method == "POST":
         form = ArticleForm(request.POST, instance=article)
         if form.is_valid():
             article = form.save(commit=False)
-            article.author = request.user
+            #article.author = request.user
             article.modify_date = timezone.now()
             article.save()
-            return redirect('communicate:detail', article_id=article.)
-'''
+            return redirect('communicate:detail', article_id=article.id)
+        else:
+            form = ArticleForm(instance=article)
+        context = {'form' : form}
+        return render(request, 'communicate/article_form.html',context)
 
 #질문 등록 함수
 def article_create(request) :
@@ -87,3 +91,12 @@ def article_create(request) :
         form = ArticleForm()
     context = {'form': form}
     return render(request, 'communicate/article_form.html', context)
+
+#@login_required(login_url='common:login')
+def answer_delete(request, answer_id):
+    answer = get_object_or_404(Answer, pk=answer_id)
+    if request.user != answer.author:
+        message.error(request, '삭제권한이 없습니다')
+    else:
+        answer.delete()
+    return redirect('communicate:detail', article_id=answer.article.id)

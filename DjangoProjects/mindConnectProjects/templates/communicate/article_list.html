@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-<!--{% load article_filter %} -->
+{% load article_filter %}
 {% block content %}
 
 <div class="container my-3">
@@ -17,7 +17,7 @@
         <tr>
             <td>
                 <!-- 번호 = 전체건수 - 시작인덱스 - 현재인덱스 + 1 -->
-                <!--{{ article_list.paginator.count|sub:article_list.start_index|sub:forloop.counter0|add:1 }}-->
+                {{ article_list.paginator.count|sub:article_list.start_index|sub:forloop.counter0|add:1 }}
             </td>
             <td>
                 <a href="{% url 'communicate:detail' article.id %}">{{ article.title }}</a>
