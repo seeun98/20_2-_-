@@ -14,15 +14,18 @@ driver.implicitly_wait(1)
 url = 'http://everytime.kr/timetable'
 
 driver.get(url)
-driver.find_element_by_name('userid').send_keys('')
-driver.find_element_by_name('password').send_keys('비밀번호입력')
+driver.find_element_by_name('userid').send_keys('아이디입력')
+driver.find_element_by_name('password').send_keys('비밀번호')
 driver.find_element_by_xpath("""//*[@id="container"]/form/p[3]/input""").click() #로그인 버튼 클릭
 driver.implicitly_wait(3)
 driver.find_element_by_xpath("""//*[@id="container"]/ul/li[1]""").click() #수업목록에서 검색 클릭
 sleep(2)
 driver.find_element_by_xpath('//*[@id="sheet"]/ul/li[3]/a').click() #자동으로 뜨는 팝업창 닫음
 
-for l in range(5): #학교 내 전공 수 만큼 i개수 제한
+page = driver.page_source  # 웹페이지 긁어옴
+soup = BeautifulSoup(page, "html.parser")  # 페이지를 soup객체로 만듦
+
+for l in range(3): #학교 내 전공 수 만큼 i개수 제한
     while True:
         try:
             driver.find_element_by_xpath("""//*[@id="subjects"]/div[1]/a[3]""").click() #전공/영역 클릭
@@ -46,9 +49,9 @@ for l in range(5): #학교 내 전공 수 만큼 i개수 제한
             continue
 
 
-    page = driver.page_source  # 웹페이지 긁어옴
-    soup = BeautifulSoup(page, "html.parser")  # 페이지를 soup객체로 만듦
+
     results = []
+
     #list = soup.find('div', {'class': 'list'}).find('tbody').find_all('td')
     trs = soup.select('#subjects > div.list > table > tbody > tr')
     for i in trs:
@@ -73,7 +76,7 @@ for l in range(5): #학교 내 전공 수 만큼 i개수 제한
         time_location = str(d[5])
         grade = str(d[6])
 
-        sql = """INSERT INTO test_subject(code, campus, subject, professor, credits, time_location, grade) VALUES('%s', 
+        sql = """INSERT IGNORE INTO test_subject(code, campus, subject, professor, credits, time_location, grade) VALUES('%s', 
         '%s', '%s', '%s', '%s', '%s', '%s') """ % (code, campus, subject, professor, credits, time_location, grade)
 
         cursor.execute(sql)
@@ -85,11 +88,5 @@ connect.close()
     #break
 
 ### 수정해야될 사항 ###
-# 반복문 l 범위 수동입력이 아닌 자동 입력될 수 있게 수정
-# 위 사항을 제외한 전공 부분은 완성했지만 교양 부분도 xpath 계산해서 받아와야함
-# DB INSERT 구문에서 값이 있을 경우 UPDATE 될 수 있도록 수정
-
-
-
-
-
+# 반복문 l 범위 수동입력이 아닌 자동 입력될 수 있게 수정  # 이건 진짜 모르겠어요....
+# 교양 : driver.find_element_by_xpath("""//*[@id="subjectCategoryFilter"]/div/ul/li[2]""").click() #교양 메뉴
