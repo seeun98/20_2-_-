@@ -1,21 +1,21 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
+from pymongo import MongoClient
+import requests
 from time import sleep
-import pymysql
 
-result=[]
+client = MongoClient('localhost', 27017)
+db = client.mindConnecting  # 'mindConnecting'라는 이름의 db를 사용한다.
 
-connect = pymysql.connect(host='localhost', user='root', password='rootroot', db='mysql') #mysql DB와 연결
-cursor = connect.cursor() #파이썬에서 쿼리 사용, 데이터 전달을 위한 cursor 인스턴스 선언
-
-driver= webdriver.Chrome()
+# driver= webdriver.Chrome('C:\Users\ASUS\Desktop\sparta10\flaskMindConnecting\chromedriver.exe')
+driver= webdriver.Chrome('chromedriver.exe')
 driver.implicitly_wait(1)
 
 url = 'http://everytime.kr/timetable'
 
 driver.get(url)
-driver.find_element_by_name('userid').send_keys('아이디입력')
-driver.find_element_by_name('password').send_keys('비밀번호')
+driver.find_element_by_name('userid').send_keys('')
+driver.find_element_by_name('password').send_keys('') 
 driver.find_element_by_xpath("""//*[@id="container"]/form/p[3]/input""").click() #로그인 버튼 클릭
 driver.implicitly_wait(3)
 driver.find_element_by_xpath("""//*[@id="container"]/ul/li[1]""").click() #수업목록에서 검색 클릭
@@ -48,8 +48,8 @@ for l in range(3): #학교 내 전공 수 만큼 i개수 제한
         except:
             continue
 
-
-
+    page = driver.page_source  # 웹페이지 긁어옴
+    soup = BeautifulSoup(page, "html.parser")  # 페이지를 soup객체로 만듦
     results = []
 
     #list = soup.find('div', {'class': 'list'}).find('tbody').find_all('td')
@@ -76,17 +76,7 @@ for l in range(3): #학교 내 전공 수 만큼 i개수 제한
         time_location = str(d[5])
         grade = str(d[6])
 
-        sql = """INSERT IGNORE INTO test_subject(code, campus, subject, professor, credits, time_location, grade) VALUES('%s', 
-        '%s', '%s', '%s', '%s', '%s', '%s') """ % (code, campus, subject, professor, credits, time_location, grade)
-
-        cursor.execute(sql)
-        connect.commit()
-
-connect.close()
+        db.schedule.insert_one({'code' : code, 'campus': campus, 'subject' : subject,
+                                'professor':professor, 'credits': credits, 'time_location': time_location, 'grade' : grade})
 
 
-    #break
-
-### 수정해야될 사항 ###
-# 반복문 l 범위 수동입력이 아닌 자동 입력될 수 있게 수정  # 이건 진짜 모르겠어요....
-# 교양 : driver.find_element_by_xpath("""//*[@id="subjectCategoryFilter"]/div/ul/li[2]""").click() #교양 메뉴
